@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/csv"
 	"fmt"
+	"github.com/eirannejad/pushcsv/internal/persistance"
 	"log"
 	"os"
 	"strings"
@@ -233,18 +234,22 @@ func main() {
 	}
 
 	// check connection string and determine target db driver
-	postgres := strings.HasPrefix(connstr, "postgres:")
-	sqlite := strings.HasPrefix(connstr, "sqlite:")
-	mongodb := strings.HasPrefix(connstr, "mongodb:")
+	dbConfig, err := persistance.NewDatabaseConfig(connstr)
+	if err != nil {
+		// TODO: Create Error And Exit Func?
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 
 	var pusherr error
 	var modified int = 0
-	if postgres {
-		modified, pusherr = PushPostgres(connstr, table, records, purge, headers, attrs)
-	} else if sqlite {
-		modified, pusherr = PushSqlite(connstr, table, records, purge, headers, attrs)
-	} else if mongodb {
-		modified, pusherr = PushMongoDB(connstr, table, records, purge, headers, attrs)
+
+	if dbConfig.Backend == persistance.Postgres {
+		modified, pusherr = PushPostgres(dbConfig.ConnString, table, records, purge, headers, attrs)
+	} else if dbConfig.Backend == persistance.Sqlite {
+		modified, pusherr = PushSqlite(dbConfig.ConnString, table, records, purge, headers, attrs)
+	} else if dbConfig.Backend == persistance.MongoDB {
+		modified, pusherr = PushMongoDB(dbConfig.ConnString, table, records, purge, headers, attrs)
 	}
 
 	if pusherr != nil {
