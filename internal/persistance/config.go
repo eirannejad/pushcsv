@@ -5,17 +5,17 @@ import (
 	"strings"
 )
 
-type DBBackend string
+type DBBackendName string
 
 const (
-	Postgres DBBackend = "postgres"
-	Sqlite   DBBackend = "sqlite"
-	MongoDB  DBBackend = "mongodb"
+	Postgres DBBackendName = "postgres"
+	Sqlite   DBBackendName = "sqlite"
+	MongoDB  DBBackendName = "mongodb"
 )
 
 type DatabaseConfig struct {
 	ConnString string
-	Backend    DBBackend
+	Backend    DBBackendName
 }
 
 func NewDatabaseConfig(connString string) (*DatabaseConfig, error) {
@@ -29,8 +29,8 @@ func NewDatabaseConfig(connString string) (*DatabaseConfig, error) {
 	}, nil
 }
 
-func parseUri(connString string) (DBBackend, error) {
-	var db DBBackend
+func parseUri(connString string) (DBBackendName, error) {
+	var db DBBackendName
 	if strings.HasPrefix(connString, "postgres:") {
 		db = Postgres
 	} else if strings.HasPrefix(connString, "sqlite:") {
