@@ -1,3 +1,7 @@
+
+# binary
+pushcsv
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
