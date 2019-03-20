@@ -17,24 +17,21 @@ type Result struct {
 }
 
 type DatabaseWriter struct {
-	Options *cli.Options
-	Logger  *cli.Logger
+	ConnectionUri string
+	Purge         bool
+	Logger        *cli.Logger
 }
 
 type Writer interface {
 	// Ensure whatever is return has Write Method
-	Write(*csv.CsvData) (*Result, error)
+	Write(*csv.TableData) (*Result, error)
 }
 
-func NewWriter(logger *cli.Logger, options *cli.Options) (Writer, error) {
-
-	dbConfig, cErr := NewDatabaseConfig(options.ConnString)
-	if cErr != nil {
-		return nil, cErr
-	}
+func NewWriter(dbConfig *DatabaseConfig, options *cli.Options, logger *cli.Logger) (Writer, error) {
 	w := &DatabaseWriter{
-		Options: options,
-		Logger:  logger,
+		ConnectionUri: options.ConnString,
+		Purge:         options.Purge,
+		Logger:        logger,
 	}
 	if dbConfig.Backend == Postgres {
 		return PostgresWriter{*w}, nil

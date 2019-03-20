@@ -13,6 +13,6 @@ type SqliteWriter struct {
 	DatabaseWriter
 }
 
-func (w SqliteWriter) Write(csvData *csv.CsvData) (*Result, error) {
+func (w SqliteWriter) Write(tableData *csv.TableData) (*Result, error) {
 	return nil, errors.New("sqlite interface not yet implemented.")
 }

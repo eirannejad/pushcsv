@@ -14,7 +14,7 @@ type MongoDBWriter struct {
 }
 
 // TODO Update
-func (w MongoDBWriter) Write(csvData *csv.CsvData) (*Result, error) {
+func (w MongoDBWriter) Write(tableData *csv.TableData) (*Result, error) {
 	return nil, errors.New("mongodb interface not yet implemented.")
 }
 

@@ -3,31 +3,32 @@ package persistance
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/eirannejad/pushcsv/internal/cli"
 	"github.com/eirannejad/pushcsv/internal/csv"
 	_ "github.com/lib/pq"
-	"strings"
 )
 
 type PostgresWriter struct {
 	DatabaseWriter
 }
 
-func (w PostgresWriter) Write(csvData *csv.CsvData) (*Result, error) {
+func (w PostgresWriter) Write(tableData *csv.TableData) (*Result, error) {
 	// open connection
-	db, err := sql.Open("postgres", w.Options.ConnString)
+	db, err := sql.Open("postgres", w.ConnectionUri)
 	if err != nil {
-		w.Logger.Debug(err)
+		return nil, err
 	}
 	defer db.Close()
 
 	// purge the table if requested
-	if w.Options.Purge {
-		db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, w.Options.Table))
+	if w.Purge {
+		db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, tableData.Name))
 	}
 
-	if len(csvData.Records) > 0 {
-		query, qErr := GenerateQuery(w.Logger, w.Options, csvData)
+	if len(tableData.Records) > 0 {
+		query, qErr := generateQuery(tableData, w.Logger)
 		if qErr != nil {
 			return nil, qErr
 		}
@@ -47,37 +48,30 @@ func (w PostgresWriter) Write(csvData *csv.CsvData) (*Result, error) {
 	}, nil
 }
 
-func GenerateQuery(logger *cli.Logger, options *cli.Options, csvData *csv.CsvData) (string, error) {
+func generateQuery(tableData *csv.TableData, logger *cli.Logger) (string, error) {
 	// read csv file and build sql insert query
 	var querystr strings.Builder
 
-	if len(options.AttrMap) > 0 {
-		columns := fmt.Sprintf("( %s )", strings.Join(options.AttrMap, ","))
-		querystr.WriteString(fmt.Sprintf("INSERT INTO %s %s values ", options.Table, columns))
+	if tableData.HasHeaders() {
+		querystr.WriteString(fmt.Sprintf("INSERT INTO %s %s values ", tableData.Name, ToSql(tableData.Headers)))
 	} else {
-		querystr.WriteString(fmt.Sprintf("INSERT INTO %s values ", options.Table))
+		querystr.WriteString(fmt.Sprintf("INSERT INTO %s values ", tableData.Name))
 	}
 
 	// build sql data info
-	count := len(csvData.Records)
-	datalines := make([]string, count)
-	for ridx, record := range csvData.Records {
-		fields := make([]string, len(record))
-		for fidx, field := range record {
-			fields[fidx] = fmt.Sprintf("'%s'", field)
-		}
-		all_fields := strings.Join(fields, ", ")
-		datalines[ridx] = fmt.Sprintf("( %s )", all_fields)
+	datalines := make([]string, 0)
+	for _, record := range tableData.Records {
+		datalines = append(datalines, ToSql(&record))
 	}
 
 	// add csv records to query string
 	all_datalines := strings.Join(datalines, ", ")
-	logger.Debug(all_datalines)
+	logger.Trace(all_datalines)
 	querystr.WriteString(all_datalines)
 	querystr.WriteString(";\n")
 
 	// execute query
 	full_query := querystr.String()
-	logger.Debug(full_query)
+	logger.Trace(full_query)
 	return full_query, nil
 }
