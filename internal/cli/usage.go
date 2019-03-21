@@ -16,13 +16,13 @@ Usage:
 Options:
 	-h --help            Show this screen.
 	--version            Show version.
-	--headers            Indicate first line of csv file is field headers
-	--purge              Purge all data from table or collection first
-	--map=<field_maps>   Map a source field to target field [from:to]
-	                     if mapping is used, all source fields missing a map will be ignored.
+	--headers            Indicate first line of csv file is column headers
+	--purge              Purge all exiting data from table or collection first
+	--map=<field_maps>   Map a source column to table field [from:to]
+	                     if mapping is used, all columns missing a map will be ignored.
 	--debug              Print debug info
-	--trace              Print trace info
-	--dry-run            Do everything except for writing data to database
+	--trace              Print trace info e.g. full sql queries
+	--dry-run            Do everything except commiting data to db
 
 Examples:
 	pushcsv sqllite://data.db users ~/users.csv
