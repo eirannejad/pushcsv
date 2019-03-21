@@ -1,4 +1,4 @@
-package datafile
+package cmd
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func Run() {
 
 	// read datafile
 	// prepare the data for writer; fixes the data mappings
-	tableData, err := datafile.ReadData(options.CsvFile, options, logger)
+	tableData, err := datafile.ReadData(options.DataFile, options, logger)
 	if err != nil {
 		// TODO: Create Error And Exit Func?
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -43,13 +43,11 @@ func Run() {
 		os.Exit(1)
 	}
 
-	// write to db if not dry run
-	if !options.DryRun {
-		result, wErr := writer.Write(tableData)
-		if wErr != nil {
-			fmt.Fprintln(os.Stderr, wErr.Error())
-			os.Exit(1)
-		}
-		logger.Print(fmt.Sprintf("Successfully updated %d records.", result.Count))
+	// write to db
+	result, wErr := writer.Write(tableData)
+	if wErr != nil {
+		fmt.Fprintln(os.Stderr, wErr.Error())
+		os.Exit(1)
 	}
+	logger.Print(fmt.Sprintf("Successfully updated %d records.", result.Count))
 }

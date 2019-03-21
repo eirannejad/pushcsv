@@ -3,7 +3,7 @@ package persistance
 import (
 	// "errors"
 	"github.com/eirannejad/pushcsv/internal/cli"
-	"github.com/eirannejad/pushcsv/internal/csv"
+	"github.com/eirannejad/pushcsv/internal/datafile"
 	_ "github.com/go-sql-driver/mysql"
 	// "gopkg.in/mgo.v2"
 	// "gopkg.in/mgo.v2/bson"
@@ -19,18 +19,20 @@ type Result struct {
 type DatabaseWriter struct {
 	ConnectionUri string
 	Purge         bool
+	DryRun        bool
 	Logger        *cli.Logger
 }
 
 type Writer interface {
 	// Ensure whatever is return has Write Method
-	Write(*csv.TableData) (*Result, error)
+	Write(*datafile.TableData) (*Result, error)
 }
 
 func NewWriter(dbConfig *DatabaseConfig, options *cli.Options, logger *cli.Logger) (Writer, error) {
 	w := &DatabaseWriter{
 		ConnectionUri: options.ConnString,
 		Purge:         options.Purge,
+		DryRun:        options.DryRun,
 		Logger:        logger,
 	}
 	if dbConfig.Backend == Postgres {

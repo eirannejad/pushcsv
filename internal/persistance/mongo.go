@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	// "database/sql"
 	// "fmt"
-	"github.com/eirannejad/pushcsv/internal/csv"
+	"github.com/eirannejad/pushcsv/internal/datafile"
 	_ "github.com/lib/pq"
 	// "strings"
 )
@@ -14,7 +14,7 @@ type MongoDBWriter struct {
 }
 
 // TODO Update
-func (w MongoDBWriter) Write(tableData *csv.TableData) (*Result, error) {
+func (w MongoDBWriter) Write(tableData *datafile.TableData) (*Result, error) {
 	return nil, errors.New("mongodb interface not yet implemented.")
 }
 

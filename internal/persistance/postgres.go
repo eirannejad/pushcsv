@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/eirannejad/pushcsv/internal/cli"
-	"github.com/eirannejad/pushcsv/internal/csv"
+	"github.com/eirannejad/pushcsv/internal/datafile"
 	_ "github.com/lib/pq"
 )
 
@@ -14,7 +14,7 @@ type PostgresWriter struct {
 	DatabaseWriter
 }
 
-func (w PostgresWriter) Write(tableData *csv.TableData) (*Result, error) {
+func (w PostgresWriter) Write(tableData *datafile.TableData) (*Result, error) {
 	// open connection
 	db, err := sql.Open("postgres", w.ConnectionUri)
 	if err != nil {
@@ -23,8 +23,11 @@ func (w PostgresWriter) Write(tableData *csv.TableData) (*Result, error) {
 	defer db.Close()
 
 	// purge the table if requested
-	if w.Purge {
-		db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, tableData.Name))
+	if w.Purge && !w.DryRun {
+		_, eErr := db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, tableData.Name))
+		if eErr != nil {
+			return nil, eErr
+		}
 	}
 
 	if len(tableData.Records) > 0 {
@@ -32,15 +35,17 @@ func (w PostgresWriter) Write(tableData *csv.TableData) (*Result, error) {
 		if qErr != nil {
 			return nil, qErr
 		}
-		sqlResult, eErr := db.Exec(query)
-		if eErr != nil {
-			return nil, eErr
+		if !w.DryRun {
+			sqlResult, eErr := db.Exec(query)
+			if eErr != nil {
+				return nil, eErr
+			}
+			rows, _ := sqlResult.RowsAffected()
+			return &Result{
+				Message: "Data Writen",
+				Count:   int(rows),
+			}, nil
 		}
-		rows, _ := sqlResult.RowsAffected()
-		return &Result{
-			Message: "Data Writen",
-			Count:   int(rows),
-		}, nil
 	}
 	return &Result{
 		Message: "No data to write",
@@ -48,12 +53,12 @@ func (w PostgresWriter) Write(tableData *csv.TableData) (*Result, error) {
 	}, nil
 }
 
-func generateQuery(tableData *csv.TableData, logger *cli.Logger) (string, error) {
+func generateQuery(tableData *datafile.TableData, logger *cli.Logger) (string, error) {
 	// read csv file and build sql insert query
 	var querystr strings.Builder
 
 	if tableData.HasHeaders() {
-		querystr.WriteString(fmt.Sprintf("INSERT INTO %s %s values ", tableData.Name, ToSql(tableData.Headers)))
+		querystr.WriteString(fmt.Sprintf("INSERT INTO %s %s values ", tableData.Name, ToSql(&tableData.Headers)))
 	} else {
 		querystr.WriteString(fmt.Sprintf("INSERT INTO %s values ", tableData.Name))
 	}
