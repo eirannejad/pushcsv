@@ -1,11 +1,12 @@
 # pushcsv
-Push CSV files easily to database (supports psql)
+Push csv/tsv data to database
 
 #### Supported Backends
 
 * postgres
-* sqlite
 * mongodb
+* mysql
+* sqlite
 
 ## Getting Started
 
@@ -22,6 +23,5 @@ $ pushcsv --help
 Insert `users.csv` into table `users`:
 
 ```
-$ pushcsv postgres://localhost:5432/mydb users ~/users.csv
+$ pushcsv postgres://user:pass@localhost:5432/mydb users ~/users.csv
 ```
-

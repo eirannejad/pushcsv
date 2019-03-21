@@ -1,49 +1,66 @@
 package cli
 
 import (
-	"github.com/docopt/docopt-go"
 	"strings"
+
+	"github.com/docopt/docopt-go"
 )
 
 type Options struct {
+	Opts       *docopt.Opts
 	ConnString string
 	Table      string
-	CsvFile    string
+	DataFile   string
 	HasHeaders bool
 	Purge      bool
-	AttrMap    []string
+	AttrMaps   map[string]string
 	Debug      bool
+	Trace      bool
+	DryRun     bool
 }
 
 func NewOptions(argv []string) *Options {
 
 	parser := &docopt.Parser{
-		HelpHandler: PrintHelpAndExit,
+		HelpHandler: printHelpAndExit,
 	}
 
 	opts, _ := parser.ParseArgs(help, argv, version)
 
 	connString, _ := opts.String("<db_uri>")
 	table, _ := opts.String("<table>")
-	csvFile, _ := opts.String("<csv_file>")
+	dataFile, _ := opts.String("<file>")
 	hasHeaders, _ := opts.Bool("--headers")
 	purge, _ := opts.Bool("--purge")
-	attrmapArg, _ := opts.String("--map")
-	debug, _ := opts.Bool("--debug")
 
-	var attrmap []string
-	if attrmapArg != "" {
-		attrmap = strings.Split(attrmapArg, ";")
-	} else {
-		attrmap = make([]string, 0)
+	// --map is a repeated argument and value is of type []string but
+	// passed as generic interface{} so needs type assertion
+	attrmapArg, _ := opts["--map"].([]string)
+	attrMaps := make(map[string]string)
+	for _, attrMapStr := range attrmapArg {
+		parts := strings.Split(attrMapStr, ":")
+		attrMaps[parts[0]] = parts[1]
 	}
+
+	// first line must be treated as header if mapping is specified
+	if len(attrMaps) > 0 {
+		hasHeaders = true
+	}
+
+	debug, _ := opts.Bool("--debug")
+	trace, _ := opts.Bool("--trace")
+	dryRun, _ := opts.Bool("--dry-run")
+
 	return &Options{
+		Opts:       &opts,
 		ConnString: connString,
 		Table:      table,
-		CsvFile:    csvFile,
+		DataFile:   dataFile,
 		HasHeaders: hasHeaders,
 		Purge:      purge,
-		AttrMap:    attrmap,
+		AttrMaps:   attrMaps,
 		Debug:      debug,
+		Trace:      trace,
+		DryRun:     dryRun,
 	}
 }

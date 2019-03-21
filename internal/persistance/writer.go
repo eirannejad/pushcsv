@@ -3,47 +3,52 @@ package persistance
 import (
 	// "errors"
 	"github.com/eirannejad/pushcsv/internal/cli"
-	"github.com/eirannejad/pushcsv/internal/csv"
+	"github.com/eirannejad/pushcsv/internal/datafile"
 	_ "github.com/go-sql-driver/mysql"
 	// "gopkg.in/mgo.v2"
 	// "gopkg.in/mgo.v2/bson"
 	// "strings"
 )
 
+// ErroCodes
+// 0: All OK
+// 1: No data to write
+// 2: data is available but did not get pushed under dry run
+// 3: headers are required
 type Result struct {
-	Message string
-	Count   int
-	// Records: ?
+	ResultCode int
+	Message    string
 }
 
 type DatabaseWriter struct {
-	Options *cli.Options
-	Logger  *cli.Logger
+	Config *DatabaseConfig
+	Purge  bool
+	DryRun bool
+	Logger *cli.Logger
 }
 
 type Writer interface {
 	// Ensure whatever is return has Write Method
-	Write(*csv.CsvData) (*Result, error)
+	Write(*datafile.TableData) (*Result, error)
 }
 
-func NewWriter(logger *cli.Logger, options *cli.Options) (Writer, error) {
-
-	dbConfig, cErr := NewDatabaseConfig(options.ConnString)
-	if cErr != nil {
-		return nil, cErr
-	}
+func NewWriter(dbConfig *DatabaseConfig, options *cli.Options, logger *cli.Logger) (Writer, error) {
 	w := &DatabaseWriter{
-		Options: options,
-		Logger:  logger,
+		Config: dbConfig,
+		Purge:  options.Purge,
+		DryRun: options.DryRun,
+		Logger: logger,
 	}
 	if dbConfig.Backend == Postgres {
 		return PostgresWriter{*w}, nil
 	} else if dbConfig.Backend == MongoDB {
 		return MongoDBWriter{*w}, nil
+	} else if dbConfig.Backend == MySql {
+		return MySqlWriter{*w}, nil
 	} else if dbConfig.Backend == Sqlite {
 		return SqliteWriter{*w}, nil
 	}
 	// ... other writers
 
-	panic("Should never get here")
+	panic("should not get here")
 }

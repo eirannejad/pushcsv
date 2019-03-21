@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"github.com/eirannejad/pushcsv/internal/cli"
-	"github.com/eirannejad/pushcsv/internal/csv"
-	"github.com/eirannejad/pushcsv/internal/persistance"
 	"os"
+
+	"github.com/eirannejad/pushcsv/internal/cli"
+	"github.com/eirannejad/pushcsv/internal/datafile"
+	"github.com/eirannejad/pushcsv/internal/persistance"
 )
 
 func Run() {
@@ -14,29 +16,50 @@ func Run() {
 	options := cli.NewOptions(argv)
 
 	// log options if requested
-	logger := cli.NewLogger()
-	logger.PrintDebug = options.Debug
-	logger.Debug(options)
-
-	// read csv
-	csvData, err := csv.ReadCSV(options.CsvFile, options.HasHeaders)
-	if err != nil {
-		// TODO: Create Error And Exit Func?
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
+	logger := cli.NewLogger(options)
+	logger.Trace(options)
+	for key, value := range *options.Opts {
+		logger.Debug(fmt.Sprintf("%s=%v", key, value))
 	}
 
 	// check connection string and determine target db driver
-	writer, nErr := persistance.NewWriter(logger, options)
-	if nErr != nil {
-		fmt.Fprintln(os.Stderr, nErr.Error())
-		os.Exit(1)
+	// verify db is supported
+	// this step should be before starting io on reading data file
+	dbConfig, cErr := persistance.NewDatabaseConfig(options.ConnString)
+	if cErr != nil {
+		errorAndExit(cErr)
 	}
-	result, wErr := writer.Write(csvData)
-	if wErr != nil {
-		fmt.Fprintln(os.Stderr, wErr.Error())
-		os.Exit(1)
+	// check if writer needs headers
+	if dbConfig.NeedsHeaders && !options.HasHeaders {
+		errorAndExit(
+			errors.New(
+				"headers are required to write to this database. " +
+					"make sure source file has headers on first line and " +
+					"use --headers flag"))
 	}
 
-	logger.Print(fmt.Sprintf("Successfully updated %d records.", result.Count))
+	// read datafile
+	// prepare the data for writer; fixes the data mappings
+	tableData, rRrr := datafile.ReadData(options.DataFile, options, logger)
+	if rRrr != nil {
+		errorAndExit(rRrr)
+	}
+
+	// request a writer for db
+	writer, nErr := persistance.NewWriter(dbConfig, options, logger)
+	if nErr != nil {
+		errorAndExit(nErr)
+	}
+
+	// write to db
+	result, wErr := writer.Write(tableData)
+	if wErr != nil {
+		errorAndExit(wErr)
+	}
+	fmt.Println(result.Message)
+}
+
+func errorAndExit(err error) {
+	fmt.Fprintln(os.Stderr, err.Error())
+	os.Exit(1)
 }
