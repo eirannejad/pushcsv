@@ -16,7 +16,10 @@ func Run() {
 
 	// log options if requested
 	logger := cli.NewLogger(options)
-	logger.Debug(options)
+	logger.Trace(options)
+	for key, value := range *options.Opts {
+		logger.Debug(fmt.Sprintf("%s=%v", key, value))
+	}
 
 	// check connection string and determine target db driver
 	// verify db is supported

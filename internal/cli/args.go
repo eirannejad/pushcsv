@@ -7,7 +7,7 @@ import (
 )
 
 type Options struct {
-	_opts      *docopt.Opts
+	Opts       *docopt.Opts
 	ConnString string
 	Table      string
 	DataFile   string
@@ -47,7 +47,7 @@ func NewOptions(argv []string) *Options {
 	dryRun, _ := opts.Bool("--dry-run")
 
 	return &Options{
-		_opts:      &opts,
+		Opts:       &opts,
 		ConnString: connString,
 		Table:      table,
 		DataFile:   dataFile,

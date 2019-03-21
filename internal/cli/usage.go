@@ -7,7 +7,7 @@ import (
 )
 
 const version string = "1.0-beta"
-const help string = `Push CSV data to a database.
+const help string = `Push CSV data to database.
 
 Usage:
 	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
@@ -16,9 +16,10 @@ Usage:
 Options:
 	-h --help            Show this screen.
 	--version            Show version.
-	--headers            Indicate first line of csv file is column headers
+	--headers            Indicate first line of csv file is field headers
 	--purge              Purge all data from table or collection first
-	--map=<field_maps>   Map a single csv column name to table field [from:to]
+	--map=<field_maps>   Map a source field to target field [from:to]
+	                     if mapping is used, all source fields missing a map will be ignored.
 	--debug              Print debug info
 	--trace              Print trace info
 	--dry-run            Do everything except for writing data to database
