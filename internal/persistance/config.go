@@ -12,7 +12,7 @@ const (
 	Postgres DBBackendName = "postgres"
 	MongoDB  DBBackendName = "mongodb"
 	MySql    DBBackendName = "mysql"
-	Sqlite   DBBackendName = "sqlite"
+	Sqlite   DBBackendName = "sqlite3"
 )
 
 type DatabaseConfig struct {
@@ -53,8 +53,8 @@ func parseUri(connString string) (DBBackendName, bool, error) {
 	} else if strings.HasPrefix(connString, "mongodb:") {
 		return MongoDB, true, nil
 	} else if strings.HasPrefix(connString, "mysql:") {
-		return MySql, true, nil
-	} else if strings.HasPrefix(connString, "sqlite:") {
+		return MySql, false, nil
+	} else if strings.HasPrefix(connString, "sqlite3:") {
 		return Sqlite, false, nil
 	} else {
 		return "", false, errors.New("db is not yet supported")

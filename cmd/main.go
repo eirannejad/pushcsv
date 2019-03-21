@@ -29,20 +29,27 @@ func Run() {
 	if cErr != nil {
 		errorAndExit(cErr)
 	}
-	// check if writer needs headers
-	if dbConfig.NeedsHeaders && !options.HasHeaders {
-		errorAndExit(
-			errors.New(
-				"headers are required to write to this database. " +
-					"make sure source file has headers on first line and " +
-					"use --headers flag"))
-	}
 
-	// read datafile
-	// prepare the data for writer; fixes the data mappings
-	tableData, rRrr := datafile.ReadData(options.DataFile, options, logger)
-	if rRrr != nil {
-		errorAndExit(rRrr)
+	var tableData *datafile.TableData
+	var readRrr error
+	// check if input file is specified
+	if options.DataFile != "" {
+		// check if writer needs headers
+		if dbConfig.NeedsHeaders && !options.HasHeaders {
+			errorAndExit(
+				errors.New(
+					"headers are required to write to this database. " +
+						"make sure source file has headers on first line and " +
+						"use --headers flag"))
+		}
+
+		// read datafile
+		// prepare the data for writer; fixes the data mappings
+		tableData, readRrr =
+			datafile.ReadData(options.DataFile, options, logger)
+		if readRrr != nil {
+			errorAndExit(readRrr)
+		}
 	}
 
 	// request a writer for db
@@ -52,9 +59,15 @@ func Run() {
 	}
 
 	// write to db
-	result, wErr := writer.Write(tableData)
-	if wErr != nil {
-		errorAndExit(wErr)
+	var result *persistance.Result
+	var commitErr error
+	if tableData != nil {
+		result, commitErr = writer.Write(tableData)
+	} else {
+		result, commitErr = writer.Purge(options.Table)
+	}
+	if commitErr != nil {
+		errorAndExit(commitErr)
 	}
 	fmt.Println(result.Message)
 }

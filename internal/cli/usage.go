@@ -11,7 +11,7 @@ const help string = `Push csv/tsv data to database
 
 Usage:
 	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
-	pushcsv <db_uri> <table> --purge
+	pushcsv <db_uri> <table> --purge [--debug] [--trace] [--dry-run]
 
 Options:
 	-h --help            show this screen
@@ -30,12 +30,13 @@ Supports:
 	postgresql:          using github.com/lib/pq
 	mongodb:             using gopkg.in/mgo.v2
 	mysql:               using github.com/go-sql-driver/mysql
-	sqlite:              using github.com/mattn/go-sqlite3
+	sqlite3:             using github.com/mattn/go-sqlite3
 
 Examples:
 	pushcsv postgres://user:pass@data.mycompany.com/mydb users ~/users.csv --headers --purge
 	pushcsv mongodb://localhost:27017/mydb users ~/users.csv --map=name:fullname --map=email:userid
-	pushcsv sqllite://data.db users ~/users.csv
+	pushcsv "mysql:ein:test@tcp(localhost:3306)/tests" users ~/users.csv --purge --map=name:fullname --map=email:userid
+	pushcsv sqlite3:data.db users ~/users.csv
 `
 
 var printHelpAndExit = func(err error, usage string) {
