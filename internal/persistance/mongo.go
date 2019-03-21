@@ -1,69 +1,92 @@
 package persistance
 
 import (
-	"github.com/pkg/errors"
-	// "database/sql"
-	// "fmt"
+	"fmt"
+
 	"github.com/eirannejad/pushcsv/internal/datafile"
 	_ "github.com/lib/pq"
-	// "strings"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type MongoDBWriter struct {
 	DatabaseWriter
 }
 
-// TODO Update
 func (w MongoDBWriter) Write(tableData *datafile.TableData) (*Result, error) {
-	return nil, errors.New("mongodb interface not yet implemented.")
+	// parse and grab database name from uri
+	w.Logger.Debug("grabbing db name from connection string")
+	dialinfo, err := mgo.ParseURL(w.Config.ConnString)
+	if err != nil {
+		return nil, err
+	}
+
+	w.Logger.Debug("opening mongodb session")
+	session, cErr := mgo.DialWithInfo(dialinfo)
+	if cErr != nil {
+		return nil, cErr
+	}
+	defer session.Close()
+
+	// Optional. Switch the session to a monotonic behavior.
+	w.Logger.Debug("setting session properties")
+	session.SetMode(mgo.Monotonic, true)
+	w.Logger.Trace(session)
+
+	w.Logger.Debug("getting target collection")
+	c := session.DB(dialinfo.Database).C(tableData.Name)
+	w.Logger.Trace(c)
+
+	if len(tableData.Records) > 0 {
+		if tableData.HasHeaders() {
+			// build sql data info
+			var count int
+			w.Logger.Debug("opening bulk operation")
+			bulkop := c.Bulk()
+
+			// purge the collection if requested
+			if w.Purge {
+				w.Logger.Debug("purging all existing documents")
+				bulkop.RemoveAll(bson.M{})
+			}
+
+			w.Logger.Debug("building documents")
+			for _, record := range tableData.Records {
+				map_obj := make(map[string]string)
+				for fidx, field := range record {
+					map_obj[tableData.Headers[fidx]] = field
+				}
+				w.Logger.Trace(map_obj)
+				bulkop.Insert(map_obj)
+				count++
+			}
+			if !w.DryRun {
+				w.Logger.Debug("running bulk operation")
+				_, txnErr := bulkop.Run()
+				if txnErr != nil {
+					return nil, txnErr
+				}
+				w.Logger.Debug("preparing report")
+				return &Result{
+					Message: fmt.Sprintf("successfully updated %d documents", count),
+				}, nil
+			} else {
+				w.Logger.Debug("dry run complete")
+				return &Result{
+					ResultCode: 2,
+					Message:    "processed documents but no changed were made to db",
+				}, nil
+			}
+		} else {
+			return &Result{
+				ResultCode: 3,
+				Message:    "headers are required",
+			}, nil
+		}
+	}
+	w.Logger.Debug("nothing to write")
+	return &Result{
+		ResultCode: 1,
+		Message:    "no data to write",
+	}, nil
 }
-
-// 	// parse and grab database name from uri
-// 	dialinfo, err := mgo.ParseURL(connstr)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	dbname := dialinfo.Database
-
-// 	// connect to db engine
-// 	session, err := mgo.Dial(connstr)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer session.Close()
-// 	// Optional. Switch the session to a monotonic behavior.
-// 	session.SetMode(mgo.Monotonic, true)
-// 	c := session.DB(dbname).C(table)
-
-// 	// purge the collection if requested
-// 	if purge {
-// 		c.RemoveAll(bson.M{})
-// 	}
-
-// 	if len(docs) > 0 {
-// 		if len(attrs) == 0 {
-// 			if len(headers) == 0 {
-// 				log.Fatal("`--map` must be specified when pushing a csv with no headers.")
-// 				return 0, nil
-// 			} else {
-// 				attrs = headers
-// 			}
-// 		}
-
-// 		// build sql data info
-// 		bulkop := c.Bulk()
-// 		for _, record := range docs {
-// 			map_obj := make(map[string]string)
-// 			for fidx, field := range record {
-// 				map_obj[attrs[fidx]] = field
-// 			}
-// 			bulkop.Insert(map_obj)
-// 		}
-// 		res, err := bulkop.Run()
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		return res.Modified, nil
-// 	}
-// 	return 0, nil
-// }

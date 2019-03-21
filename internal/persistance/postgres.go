@@ -3,6 +3,7 @@ package persistance
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/eirannejad/pushcsv/internal/cli"
@@ -16,40 +17,66 @@ type PostgresWriter struct {
 
 func (w PostgresWriter) Write(tableData *datafile.TableData) (*Result, error) {
 	// open connection
-	db, err := sql.Open("postgres", w.ConnectionUri)
+	w.Logger.Debug("opening postgresql connection")
+	db, err := sql.Open("postgres", w.Config.ConnString)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	// purge the table if requested
-	if w.Purge && !w.DryRun {
-		_, eErr := db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, tableData.Name))
-		if eErr != nil {
-			return nil, eErr
-		}
-	}
-
 	if len(tableData.Records) > 0 {
+		// start transaction
+		w.Logger.Debug("opening transaction")
+		tx, beginErr := db.Begin()
+		if beginErr != nil {
+			return nil, beginErr
+		}
+		defer tx.Rollback()
+
+		// purge the table if requested
+		if w.Purge && !w.DryRun {
+			w.Logger.Debug("truncating table")
+			_, eErr := db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, tableData.Name))
+			if eErr != nil {
+				return nil, eErr
+			}
+		}
+
 		query, qErr := generateQuery(tableData, w.Logger)
 		if qErr != nil {
 			return nil, qErr
 		}
 		if !w.DryRun {
+			w.Logger.Debug("executing insert query")
 			sqlResult, eErr := db.Exec(query)
 			if eErr != nil {
 				return nil, eErr
 			}
+
+			// commit transaction
+			w.Logger.Debug("commiting transaction")
+			txnErr := tx.Commit()
+			if txnErr != nil {
+				log.Fatal(txnErr)
+			}
+
+			w.Logger.Debug("preparing report")
 			rows, _ := sqlResult.RowsAffected()
 			return &Result{
-				Message: "Data Writen",
-				Count:   int(rows),
+				Message: fmt.Sprintf("successfully updated %d records", int(rows)),
+			}, nil
+		} else {
+			w.Logger.Debug("dry run complete")
+			return &Result{
+				ResultCode: 2,
+				Message:    "processed records but no changed were made to db",
 			}, nil
 		}
 	}
+	w.Logger.Debug("nothing to write")
 	return &Result{
-		Message: "No data to write",
-		Count:   0,
+		ResultCode: 1,
+		Message:    "no data to write",
 	}, nil
 }
 
@@ -58,15 +85,18 @@ func generateQuery(tableData *datafile.TableData, logger *cli.Logger) (string, e
 	var querystr strings.Builder
 
 	if tableData.HasHeaders() {
-		querystr.WriteString(fmt.Sprintf("INSERT INTO %s %s values ", tableData.Name, ToSql(&tableData.Headers)))
+		logger.Debug("generating insert query with headers")
+		querystr.WriteString(fmt.Sprintf("INSERT INTO %s %s values ", tableData.Name, ToSql(&tableData.Headers, false)))
 	} else {
+		logger.Debug("generating insert query with-out headers")
 		querystr.WriteString(fmt.Sprintf("INSERT INTO %s values ", tableData.Name))
 	}
 
 	// build sql data info
+	logger.Debug("building insert query for data")
 	datalines := make([]string, 0)
 	for _, record := range tableData.Records {
-		datalines = append(datalines, ToSql(&record))
+		datalines = append(datalines, ToSql(&record, true))
 	}
 
 	// add csv records to query string
@@ -74,6 +104,7 @@ func generateQuery(tableData *datafile.TableData, logger *cli.Logger) (string, e
 	logger.Trace(all_datalines)
 	querystr.WriteString(all_datalines)
 	querystr.WriteString(";\n")
+	logger.Debug("building query completed")
 
 	// execute query
 	full_query := querystr.String()

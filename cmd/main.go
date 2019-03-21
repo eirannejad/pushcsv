@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -26,31 +27,39 @@ func Run() {
 	// this step should be before starting io on reading data file
 	dbConfig, cErr := persistance.NewDatabaseConfig(options.ConnString)
 	if cErr != nil {
-		fmt.Fprintln(os.Stderr, cErr.Error())
-		os.Exit(1)
+		errorAndExit(cErr)
+	}
+	// check if writer needs headers
+	if dbConfig.NeedsHeaders && !options.HasHeaders {
+		errorAndExit(
+			errors.New(
+				"headers are required to write to this database. " +
+					"make sure source file has headers on first line and " +
+					"use --headers flag"))
 	}
 
 	// read datafile
 	// prepare the data for writer; fixes the data mappings
-	tableData, err := datafile.ReadData(options.DataFile, options, logger)
-	if err != nil {
-		// TODO: Create Error And Exit Func?
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
+	tableData, rRrr := datafile.ReadData(options.DataFile, options, logger)
+	if rRrr != nil {
+		errorAndExit(rRrr)
 	}
 
 	// request a writer for db
 	writer, nErr := persistance.NewWriter(dbConfig, options, logger)
 	if nErr != nil {
-		fmt.Fprintln(os.Stderr, nErr.Error())
-		os.Exit(1)
+		errorAndExit(nErr)
 	}
 
 	// write to db
 	result, wErr := writer.Write(tableData)
 	if wErr != nil {
-		fmt.Fprintln(os.Stderr, wErr.Error())
-		os.Exit(1)
+		errorAndExit(wErr)
 	}
-	logger.Print(fmt.Sprintf("Successfully updated %d records.", result.Count))
+	fmt.Println(result.Message)
+}
+
+func errorAndExit(err error) {
+	fmt.Fprintln(os.Stderr, err.Error())
+	os.Exit(1)
 }

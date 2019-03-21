@@ -7,27 +7,35 @@ import (
 )
 
 const version string = "1.0-beta"
-const help string = `Push CSV data to database.
+const help string = `Push csv/tsv data to database
 
 Usage:
 	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
 	pushcsv <db_uri> <table> --purge
 
 Options:
-	-h --help            Show this screen.
-	--version            Show version.
-	--headers            Indicate first line of csv file is column headers
-	--purge              Purge all exiting data from table or collection first
-	--map=<field_maps>   Map a source column to table field [from:to]
-	                     if mapping is used, all columns missing a map will be ignored.
-	--debug              Print debug info
-	--trace              Print trace info e.g. full sql queries
-	--dry-run            Do everything except commiting data to db
+	-h --help            show this screen
+	--version            show version
+	--headers            when first line of csv file is column headers
+	--purge              purge all exiting data from table or collection before pushing new data
+	--map=<field_maps>   map a source column header to table field [from:to]
+	                     if mapping is used, all columns missing a map will be ignored,
+	                     using mapping is a great way to selectively push data
+	                     --map assumes --headers. no need to specify both
+	--debug              print debug info
+	--trace              print trace info e.g. full sql queries
+	--dry-run            do everything except commiting data to db
+
+Supports:
+	postgresql:          using github.com/lib/pq
+	mongodb:             using gopkg.in/mgo.v2
+	mysql:               using github.com/go-sql-driver/mysql
+	sqlite:              using github.com/mattn/go-sqlite3
 
 Examples:
-	pushcsv sqllite://data.db users ~/users.csv
-	pushcsv postgres://localhost:5432/mydb users ~/users.csv --headers --purge
+	pushcsv postgres://user:pass@data.mycompany.com/mydb users ~/users.csv --headers --purge
 	pushcsv mongodb://localhost:27017/mydb users ~/users.csv --map=name:fullname --map=email:userid
+	pushcsv sqllite://data.db users ~/users.csv
 `
 
 var printHelpAndExit = func(err error, usage string) {

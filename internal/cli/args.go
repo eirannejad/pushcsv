@@ -42,6 +42,11 @@ func NewOptions(argv []string) *Options {
 		attrMaps[parts[0]] = parts[1]
 	}
 
+	// first line must be treated as header if mapping is specified
+	if len(attrMaps) > 0 {
+		hasHeaders = true
+	}
+
 	debug, _ := opts.Bool("--debug")
 	trace, _ := opts.Bool("--trace")
 	dryRun, _ := opts.Bool("--dry-run")

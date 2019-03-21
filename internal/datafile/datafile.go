@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/eirannejad/pushcsv/internal/cli"
 	"github.com/pkg/errors"
@@ -27,26 +28,32 @@ func ReadData(dataFile string, options *cli.Options, logger *cli.Logger) (*Table
 		return nil, err
 	}
 
-	fileExt := filepath.Ext(dataFile)
+	// pick/configure reader by file extension
+	fileExt := strings.ToLower(filepath.Ext(dataFile))
 	var records [][]string
 	var readErr error
-	if fileExt == ".csv" {
+	if fileExt == ".csv" || fileExt == ".tsv" {
 		csvreader := csv.NewReader(datafilehndlr)
 		// csvreader.LazyQuotes = true
-		// TODO: csvreader.Comma = '\t'
+		if fileExt == ".tsv" {
+			csvreader.Comma = '\t'
+		}
 		records, readErr = csvreader.ReadAll()
 		if readErr != nil {
 			return nil, readErr
-		}
-		if len(records) < 1 {
-			return nil, errors.New("csv is empty")
 		}
 	} else {
 		return nil, errors.New(fmt.Sprintf("%s file format not supported", fileExt))
 	}
 
+	// check if there is data
+	if len(records) < 1 {
+		return nil, errors.New("data file is empty")
+	}
+
+	// if headers exist
 	if options.HasHeaders {
-		// if maps exits
+		// if maps exits process maps
 		if len(options.AttrMaps) > 0 {
 			// grab the mapped fields only
 			mappedFieldIndices := make([]int, 0)
@@ -72,15 +79,18 @@ func ReadData(dataFile string, options *cli.Options, logger *cli.Logger) (*Table
 				Headers: mappedFields,
 				Records: mappedFieldValues,
 			}, nil
-		} else {
-			// otherwise return all
+		} else
+		// otherwise return all
+		{
 			return &TableData{
 				Name:    options.Table,
 				Headers: records[0],
 				Records: records[1:],
 			}, nil
 		}
-	} else {
+	} else
+	// or just return the dumb data
+	{
 		return &TableData{
 			Name:    options.Table,
 			Records: records[1:],
