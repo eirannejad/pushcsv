@@ -8,7 +8,15 @@ Push csv/tsv data to database
 * mysql
 * sqlite
 
-## Getting Started
+### Getting pushcsv
+
+Build process on Windows requires gcc to support compiling the sqlite3 libraries. Therefore binaries are provided for convenience under [Releases](https://github.com/eirannejad/pushcsv/releases). `pushcsv` can be installed on Windows using [Chocolatey](https://chocolatey.org/) package manager as well.
+
+```
+choco install pushcsv
+```
+
+#### Building from source
 
 ```
 $ git clone git@github.com:eirannejad/pushcsv.git
@@ -18,9 +26,9 @@ $ go install -ldflags "-w" .
 $ pushcsv --help
 ```
 
-#### Usage
+### Usage
 
-Insert `users.csv` into table `users`:
+Examples of pushing `users.csv` into table `users` on various databases:
 
 ```
 $ pushcsv postgres://user:pass@data.mycompany.com/mydb users ~/users.csv --headers --purge
