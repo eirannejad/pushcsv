@@ -21,32 +21,33 @@ type Result struct {
 }
 
 type DatabaseWriter struct {
-	Config *DatabaseConfig
-	Purge  bool
-	DryRun bool
-	Logger *cli.Logger
+	Config           *DatabaseConfig
+	PurgeBeforeWrite bool
+	DryRun           bool
+	Logger           *cli.Logger
 }
 
 type Writer interface {
 	// Ensure whatever is return has Write Method
 	Write(*datafile.TableData) (*Result, error)
+	Purge(string) (*Result, error)
 }
 
 func NewWriter(dbConfig *DatabaseConfig, options *cli.Options, logger *cli.Logger) (Writer, error) {
 	w := &DatabaseWriter{
-		Config: dbConfig,
-		Purge:  options.Purge,
-		DryRun: options.DryRun,
-		Logger: logger,
+		Config:           dbConfig,
+		PurgeBeforeWrite: options.Purge,
+		DryRun:           options.DryRun,
+		Logger:           logger,
 	}
 	if dbConfig.Backend == Postgres {
-		return PostgresWriter{*w}, nil
+		return GenericSQLWriter{*w}, nil
 	} else if dbConfig.Backend == MongoDB {
 		return MongoDBWriter{*w}, nil
 	} else if dbConfig.Backend == MySql {
-		return MySqlWriter{*w}, nil
+		return GenericSQLWriter{*w}, nil
 	} else if dbConfig.Backend == Sqlite {
-		return SqliteWriter{*w}, nil
+		return GenericSQLWriter{*w}, nil
 	}
 	// ... other writers
 
