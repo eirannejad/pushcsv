@@ -10,10 +10,17 @@ func ToSql(values *[]string, wrap bool) string {
 	cleanedValues := make([]string, 0)
 	valueFormat := "%s"
 	if wrap {
-		valueFormat = "'%s'"
-	}
-	for _, value := range *values {
-		cleanedValues = append(cleanedValues, fmt.Sprintf(valueFormat, value))
+		for _, value := range *values {
+			cleanedValues = append(
+				cleanedValues,
+				fmt.Sprintf("'%s'", strings.Replace(value, "'", "''", -1)))
+		}
+	} else {
+		for _, value := range *values {
+			cleanedValues = append(
+				cleanedValues,
+				fmt.Sprintf(valueFormat, value))
+		}
 	}
 	// create the (,,,) sql value list
 	return fmt.Sprintf("(%s)", strings.Join(cleanedValues, ", "))
