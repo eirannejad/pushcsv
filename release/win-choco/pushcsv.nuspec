@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>pushcsv</id>
+    <version>1.0</version>
+    <title>pushcsv (Install)</title>
+    <authors>Ehsan Iran-Nejad,Gui Talarico</authors>
+    <projectUrl>https://github.com/eirannejad/pushcsv</projectUrl>
+    <copyright>(c) 2019 Ehsan Iran-Nejad, Gui Talarico</copyright>
+    <licenseUrl>https://github.com/eirannejad/pushcsv/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/eirannejad/pushcsv</projectSourceUrl>
+    <docsUrl>https://github.com/eirannejad/pushcsv/blob/master/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/eirannejad/pushcsv/issues</bugTrackerUrl>
+    <tags>pushcsv csv tsv database</tags>
+    <summary>Push csv/tsv data to database</summary>
+    <description>CLI utility written in golang to push csv/tsv data to supported database</description>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
