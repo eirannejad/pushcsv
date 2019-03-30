@@ -93,7 +93,7 @@ func ReadData(dataFile string, options *cli.Options, logger *cli.Logger) (*Table
 	{
 		return &TableData{
 			Name:    options.Table,
-			Records: records[1:],
+			Records: records,
 		}, nil
 	}
 }

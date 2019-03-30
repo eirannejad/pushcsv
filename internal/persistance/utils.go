@@ -11,9 +11,13 @@ func ToSql(values *[]string, wrap bool) string {
 	valueFormat := "%s"
 	if wrap {
 		for _, value := range *values {
-			cleanedValues = append(
-				cleanedValues,
-				fmt.Sprintf("'%s'", strings.Replace(value, "'", "''", -1)))
+			if value != "" {
+				cleanedValues = append(
+					cleanedValues,
+					fmt.Sprintf("'%s'", strings.Replace(value, "'", "''", -1)))
+			} else {
+				cleanedValues = append(cleanedValues, "NULL")
+			}
 		}
 	} else {
 		for _, value := range *values {
