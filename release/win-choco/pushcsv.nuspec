@@ -4,6 +4,7 @@
     <id>pushcsv</id>
     <version>1.1</version>
     <title>pushcsv (Install)</title>
+    <owners>eirannejad</owners>
     <authors>Ehsan Iran-Nejad,Gui Talarico</authors>
     <projectUrl>https://github.com/eirannejad/pushcsv</projectUrl>
     <copyright>(c) 2019 Ehsan Iran-Nejad, Gui Talarico</copyright>
