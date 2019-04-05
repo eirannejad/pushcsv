@@ -11,6 +11,7 @@
     <licenseUrl>https://github.com/eirannejad/pushcsv/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/eirannejad/pushcsv</projectSourceUrl>
+    <packageSourceUrl>https://github.com/eirannejad/pushcsv/tree/master/release/win-choco</packageSourceUrl>
     <docsUrl>https://github.com/eirannejad/pushcsv/blob/master/README.md</docsUrl>
     <bugTrackerUrl>https://github.com/eirannejad/pushcsv/issues</bugTrackerUrl>
     <tags>pushcsv csv tsv database</tags>
