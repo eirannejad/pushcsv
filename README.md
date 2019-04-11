@@ -3,12 +3,13 @@ Push csv/tsv data to database
 
 #### Supported Backends
 
-|Database   |Driver                         |
-|-----------|-------------------------------|
-|postgresql |github.com/lib/pq              |
-|mongodb    |gopkg.in/mgo.v2                |
-|mysql      |github.com/go-sql-driver/mysql |
-|sqlite3    |github.com/mattn/go-sqlite3    |
+|Database   |Driver                                 |
+|-----------|---------------------------------------|
+|postgresql |github.com/lib/pq                      |
+|mongodb    |gopkg.in/mgo.v2                        |
+|mysql      |github.com/go-sql-driver/mysql         |
+|sqlserver  |github.com/denisenkom/go-mssqldb       |
+|sqlite3    |github.com/mattn/go-sqlite3            |
 
 ### Getting pushcsv
 
@@ -28,8 +29,9 @@ Examples of pushing `users.csv` into table (collection in case of mongodb) `user
 
 ```shell
 $ pushcsv postgres://user:pass@data.mycompany.com/mydb users ~/users.csv --headers --purge
-$ pushcsv mongodb://localhost:27017/mydb users ~/users.csv --map=name:fullname --map=email:userid
-$ pushcsv "mysql:ein:test@tcp(localhost:3306)/tests" users ~/users.csv --purge --map=name:fullname --map=email:userid
+$ pushcsv mongodb://user:pass@localhost:27017/mydb users ~/users.csv --map=name:fullname --map=email:userid
+$ pushcsv "mysql:user:pass@tcp(localhost:3306)/tests" users ~/users.csv --purge --map=name:fullname --map=email:userid
+$ pushcsv sqlserver://user:pass@my-azure-db.database.windows.net?database=mydb users ~/users.csv --purge --map=name:fullname --map=email:userid
 $ pushcsv sqlite3:data.db users ~/users.csv
 ```
 
