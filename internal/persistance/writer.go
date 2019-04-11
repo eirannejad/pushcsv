@@ -1,13 +1,8 @@
 package persistance
 
 import (
-	// "errors"
 	"github.com/eirannejad/pushcsv/internal/cli"
 	"github.com/eirannejad/pushcsv/internal/datafile"
-	_ "github.com/go-sql-driver/mysql"
-	// "gopkg.in/mgo.v2"
-	// "gopkg.in/mgo.v2/bson"
-	// "strings"
 )
 
 // ErroCodes
@@ -45,6 +40,8 @@ func NewWriter(dbConfig *DatabaseConfig, options *cli.Options, logger *cli.Logge
 	} else if dbConfig.Backend == MongoDB {
 		return MongoDBWriter{*w}, nil
 	} else if dbConfig.Backend == MySql {
+		return GenericSQLWriter{*w}, nil
+	} else if dbConfig.Backend == MSSql {
 		return GenericSQLWriter{*w}, nil
 	} else if dbConfig.Backend == Sqlite {
 		return GenericSQLWriter{*w}, nil
