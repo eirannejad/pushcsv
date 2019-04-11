@@ -1,8 +1,10 @@
 package datafile
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,9 +23,30 @@ func (td TableData) HasHeaders() bool {
 	return td.Headers != nil
 }
 
+func prepareUTF8(file *os.File) ([]byte, error) {
+	utf8BOM := []byte{0xef, 0xbb, 0xbf}
+
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	if bytes.Equal(b[0:3], utf8BOM) {
+		return b[3:], nil
+	} else {
+		return b, nil
+	}
+}
+
 func ReadData(dataFile string, options *cli.Options, logger *cli.Logger) (*TableData, error) {
 	// open data file
 	datafilehndlr, err := os.Open(dataFile)
+	if err != nil {
+		return nil, err
+	}
+	defer datafilehndlr.Close()
+
+	bytearray, err := prepareUTF8(datafilehndlr)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +56,7 @@ func ReadData(dataFile string, options *cli.Options, logger *cli.Logger) (*Table
 	var records [][]string
 	var readErr error
 	if fileExt == ".csv" || fileExt == ".tsv" {
-		csvreader := csv.NewReader(datafilehndlr)
+		csvreader := csv.NewReader(strings.NewReader(string(bytearray)))
 		// csvreader.LazyQuotes = true
 		if fileExt == ".tsv" {
 			csvreader.Comma = '\t'
