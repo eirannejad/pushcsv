@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop';
 $toolsDir   = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$url        = 'https://github.com/eirannejad/pushcsv/releases/download/v1.1/pushcsv-win64.zip'
+$url        = 'https://github.com/eirannejad/pushcsv/releases/download/v1.4/pushcsv-win64.zip'
 
 $packageArgs = @{
   packageName   = $env:ChocolateyPackageName
@@ -8,7 +8,7 @@ $packageArgs = @{
   fileType      = 'EXE'
   url           = $url
   softwareName  = 'pushcsv*'
-  checksum      = 'A75A9E361A584582FC145181A793BC07F142D76C848B3C53CA9BE640A664B252'
+  checksum      = '83C7C528E5348353C15C2038AC248CE6CDC7A211BABDDEE8E08B88E4D532135E'
   checksumType  = 'sha256'
 }
 

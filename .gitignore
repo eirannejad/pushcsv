@@ -16,3 +16,5 @@ pushcsv
 *.out
 
 \.DS_Store
+
+*.nupkg
