@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const version string = "1.4"
+const version string = "1.5"
 const help string = `Push csv/tsv data to database
 
 Usage:
