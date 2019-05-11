@@ -18,6 +18,7 @@ Options:
 	--version            show version
 	--headers            when first line of csv file is column headers
 	--purge              purge all exiting data from table or collection before pushing new data
+	--compact            compact after pushing data (sql vacuum, mongodb compact)
 	--map=<field_maps>   map a source column header to table field [from:to]
 	                     if mapping is used, all columns missing a map will be ignored,
 	                     using mapping is a great way to selectively push data

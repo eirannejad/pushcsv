@@ -100,6 +100,15 @@ func (w MongoDBWriter) Write(tableData *datafile.TableData) (*Result, error) {
 		bulkop.Insert(map_obj)
 	}
 
+	// compact collection if requested
+	if w.CompactAfterWrite {
+		w.Logger.Debug("compacting collection")
+		if !w.DryRun {
+			// FIXME: need compacting support in mongodb driver
+			w.Logger.Debug("not implemented. need compacting support in mongodb driver")
+		}
+	}
+
 	w.Logger.Debug("running bulk operation")
 	if !w.DryRun {
 		_, txnErr := bulkop.Run()
