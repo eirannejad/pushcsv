@@ -10,7 +10,7 @@ const version string = "1.5"
 const help string = `Push csv/tsv data to database
 
 Usage:
-	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
+	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--compact] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
 	pushcsv <db_uri> <table> --purge [--debug] [--trace] [--dry-run]
 
 Options:
