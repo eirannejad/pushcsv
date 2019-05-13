@@ -75,7 +75,8 @@ func (w MongoDBWriter) Write(tableData *datafile.TableData) (*Result, error) {
 	w.Logger.Trace(session)
 
 	w.Logger.Debug("getting target collection")
-	c := session.DB(dialinfo.Database).C(tableData.Name)
+	db := session.DB(dialinfo.Database)
+	c := db.C(tableData.Name)
 	w.Logger.Trace(c)
 
 	w.Logger.Debug("opening bulk operation")
@@ -100,21 +101,27 @@ func (w MongoDBWriter) Write(tableData *datafile.TableData) (*Result, error) {
 		bulkop.Insert(map_obj)
 	}
 
-	// compact collection if requested
-	if w.CompactAfterWrite {
-		w.Logger.Debug("compacting collection")
-		if !w.DryRun {
-			// FIXME: need compacting support in mongodb driver
-			w.Logger.Debug("not implemented. need compacting support in mongodb driver")
-		}
-	}
-
 	w.Logger.Debug("running bulk operation")
 	if !w.DryRun {
 		_, txnErr := bulkop.Run()
 		if txnErr != nil {
 			return nil, txnErr
 		}
+
+		// compact collection if requested
+		if w.CompactAfterWrite {
+			w.Logger.Debug("compacting collection")
+			if !w.DryRun {
+				compactErr := db.Run(
+					bson.D{{Name: "compact", Value: tableData.Name}},
+					nil)
+				if compactErr != nil {
+					return nil, compactErr
+				}
+				w.Logger.Debug("not implemented. need compacting support in mongodb driver")
+			}
+		}
+
 		w.Logger.Debug("preparing report")
 		return &Result{
 			Message: fmt.Sprintf(
