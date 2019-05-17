@@ -1,3 +1,5 @@
+<img src="release/pushcsv.svg" width="128"/>
+
 # pushcsv
 Push csv/tsv data to database
 
