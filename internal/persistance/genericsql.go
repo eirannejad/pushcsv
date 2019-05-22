@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/eirannejad/pushcsv/internal/cli"
 	"github.com/eirannejad/pushcsv/internal/datafile"
 	_ "github.com/go-sql-driver/mysql"

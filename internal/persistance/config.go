@@ -12,6 +12,7 @@ const (
 	Postgres DBBackendName = "postgres"
 	MongoDB  DBBackendName = "mongodb"
 	MySql    DBBackendName = "mysql"
+	MSSql    DBBackendName = "sqlserver"
 	Sqlite   DBBackendName = "sqlite3"
 )
 
@@ -29,17 +30,6 @@ func NewDatabaseConfig(connString string) (*DatabaseConfig, error) {
 		return nil, err
 	}
 
-	// TODO: implement auth from env var
-	// var username, password string
-	// authinfo := os.Getenv("PUSHCSVAUTH")
-	// if authinfo != "" {
-	// 	parts := strings.Split(authinfo, ":")
-	// 	if len(parts) == 2 {
-	// 		username = parts[0]
-	// 		password = parts[1]
-	// 	}
-	// }
-
 	return &DatabaseConfig{
 		NeedsHeaders: needsheaders,
 		ConnString:   connString,
@@ -54,6 +44,8 @@ func parseUri(connString string) (DBBackendName, bool, error) {
 		return MongoDB, true, nil
 	} else if strings.HasPrefix(connString, "mysql:") {
 		return MySql, false, nil
+	} else if strings.HasPrefix(connString, "sqlserver:") {
+		return MSSql, false, nil
 	} else if strings.HasPrefix(connString, "sqlite3:") {
 		return Sqlite, false, nil
 	} else {
