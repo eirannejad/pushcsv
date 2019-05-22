@@ -1,0 +1,2 @@
+#!
+TESTPATH="`dirname \"$0\"`"
