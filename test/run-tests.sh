@@ -1,8 +1,9 @@
-#!
+#! /bin/bash
 # globals
-export TESTPATH="`dirname \"$0\"`"
-export TESTENV=$TESTPATH/testenv
-export DBTESTS=$TESTPATH/dbtests
+export TESTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+export TESTENV=$TESTPATH/env
+export DBTESTS=$TESTPATH/dbs
+export TESTCASES=$TESTPATH/cases
 export ASSETS=$TESTPATH/assets
 export LOGPATH=$TESTPATH/logs
 
@@ -17,14 +18,14 @@ export HEADHASH=`git describe --always`
 export LOGFILE=$LOGPATH/$HEADHASH"_test.log"
 
 # setup
-$TESTENV/setup-env.sh
+$TESTENV/setup-env.sh      | tee -a $LOGFILE
 
 # db tests
-$DBTESTS/test-postgres.sh
-# $DBTESTS/test-monogdb.sh
-$DBTESTS/test-mysql.sh
-$DBTESTS/test-sqlserver.sh
-$DBTESTS/test-sqlite.sh
+$DBTESTS/test-postgres.sh  | tee -a $LOGFILE
+$DBTESTS/test-monogdb.sh   | tee -a $LOGFILE
+$DBTESTS/test-mysql.sh     | tee -a $LOGFILE
+$DBTESTS/test-sqlserver.sh | tee -a $LOGFILE
+$DBTESTS/test-sqlite.sh    | tee -a $LOGFILE
 
 # teardown
-$TESTENV/teardown-env.sh
+$TESTENV/teardown-env.sh   | tee -a $LOGFILE

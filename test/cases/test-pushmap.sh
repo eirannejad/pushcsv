@@ -1,0 +1,1 @@
+echo "testing pushing mapped fields to database..."

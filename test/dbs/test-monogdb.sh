@@ -35,41 +35,9 @@ exit
 sleep 2
 
 printf $PROGRESSPRINT
-# test pushing utf-8 csv input
-TEST="utf-8 test"
-pushcsv mongodb://$TESTU:$TESTP@localhost:27017/$TESTDB $TESTCOL $ASSETS/test-utf8.csv --headers --debug --trace  >>$LOGFILE 2>&1 
-if [ $? -eq 0 ]; then
-    echo -e $PASS $TEST
-else
-    echo -e $FAIL $TEST
-fi
 
-# test pushing utf-8 with BOM csv input
-TEST="utf-8 BOM test"
-pushcsv mongodb://$TESTU:$TESTP@localhost:27017/$TESTDB $TESTCOL $ASSETS/test-utf8bom.csv --headers --debug --trace >>$LOGFILE 2>&1 
-if [ $? -eq 0 ]; then
-    echo -e $PASS $TEST
-else
-    echo -e $FAIL $TEST
-fi
-
-# test pushing utf-16 csv input
-TEST="utf-16 test"
-pushcsv mongodb://$TESTU:$TESTP@localhost:27017/$TESTDB $TESTCOL $ASSETS/test-utf16.csv --headers --debug --trace  >>$LOGFILE 2>&1 
-if [ $? -eq 0 ]; then
-    echo -e $PASS $TEST
-else
-    echo -e $FAIL $TEST
-fi
-
-# test pushing utf-16 with BOM csv input
-TEST="utf-16 BOM test"
-pushcsv mongodb://$TESTU:$TESTP@localhost:27017/$TESTDB $TESTCOL $ASSETS/test-utf16be.csv --headers --debug --trace  >>$LOGFILE 2>&1 
-if [ $? -eq 0 ]; then
-    echo -e $PASS $TEST
-else
-    echo -e $FAIL $TEST
-fi
+# export the db config and run tests
+$TESTCASES/test-all.sh "mongodb://$TESTU:$TESTP@localhost:27017/$TESTDB" $TESTCOL -h
 
 printf $PROGRESSPRINT "cleaning up..."
 docker stop pushcsvtestmongo   >>$LOGFILE 2>&1 
