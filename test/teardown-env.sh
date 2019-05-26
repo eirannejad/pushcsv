@@ -1,2 +1,0 @@
-#!
-TESTPATH="`dirname \"$0\"`"
