@@ -67,10 +67,10 @@ func prepareUTF8(file *os.File, logger *cli.Logger) ([]byte, error) {
 		return b[3:], nil
 	} else if bytes.Equal(b[0:2], BOM_UTF16) {
 		logger.Debug("Input file encoding detected as UTF16 (LittleEndian)")
-		return DecodeUTF16(b, false)
+		return DecodeUTF16(b[2:], false)
 	} else if bytes.Equal(b[0:2], BOM_UTF16_BE) {
 		logger.Debug("Input file encoding detected as UTF16 BigEndian")
-		return DecodeUTF16(b, true)
+		return DecodeUTF16(b[2:], true)
 	} else {
 		logger.Debug("Input file encoding detected as UTF8")
 		return b, nil
