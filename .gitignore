@@ -18,3 +18,6 @@ pushcsv
 \.DS_Store
 
 *.nupkg
+
+# test env
+test/logs

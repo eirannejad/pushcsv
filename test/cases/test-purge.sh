@@ -1,0 +1,1 @@
+echo "testing purging existing db objects..."

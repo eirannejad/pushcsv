@@ -3,21 +3,21 @@ package cli
 import (
 	"fmt"
 	"os"
-	"strings"
 )
 
-const version string = "1.4"
+const version string = "1.6"
 const help string = `Push csv/tsv data to database
 
 Usage:
-	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
+	pushcsv <db_uri> <table> <file> [--headers] [--purge] [--compact] [--map=<field_maps>]... [--debug] [--trace] [--dry-run]
 	pushcsv <db_uri> <table> --purge [--debug] [--trace] [--dry-run]
 
 Options:
 	-h --help            show this screen
-	--version            show version
+	-V --version         show version
 	--headers            when first line of csv file is column headers
 	--purge              purge all exiting data from table or collection before pushing new data
+	--compact            compact after pushing data (sql vacuum, mongodb compact)
 	--map=<field_maps>   map a source column header to table field [from:to]
 	                     if mapping is used, all columns missing a map will be ignored,
 	                     using mapping is a great way to selectively push data
@@ -41,16 +41,16 @@ Examples:
 	pushcsv sqlite3:data.db users ~/users.csv
 `
 
-var printHelpAndExit = func(err error, usage string) {
+var printHelpAndExit = func(err error, docoptMessage string) {
 	if err != nil {
+		// if err occured print full help
+		// docopt only includes usage section in its message
 		fmt.Fprintln(os.Stderr, help)
 		os.Exit(1)
 	} else {
-		if strings.Index(usage, version) == 0 {
-			fmt.Println(usage)
-		} else {
-			fmt.Println(help)
-		}
+		// otherwise print whatever docopt says
+		// e.g. reporting version
+		fmt.Println(docoptMessage)
 		os.Exit(0)
 	}
 }

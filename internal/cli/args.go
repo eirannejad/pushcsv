@@ -17,6 +17,7 @@ type Options struct {
 	Debug      bool
 	Trace      bool
 	DryRun     bool
+	Compact    bool
 }
 
 func NewOptions(argv []string) *Options {
@@ -50,6 +51,7 @@ func NewOptions(argv []string) *Options {
 	debug, _ := opts.Bool("--debug")
 	trace, _ := opts.Bool("--trace")
 	dryRun, _ := opts.Bool("--dry-run")
+	compact, _ := opts.Bool("--compact")
 
 	return &Options{
 		Opts:       &opts,
@@ -62,5 +64,6 @@ func NewOptions(argv []string) *Options {
 		Debug:      debug,
 		Trace:      trace,
 		DryRun:     dryRun,
+		Compact:    compact,
 	}
 }

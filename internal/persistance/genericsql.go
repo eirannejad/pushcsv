@@ -103,6 +103,18 @@ func (w GenericSQLWriter) Write(tableData *datafile.TableData) (*Result, error) 
 		}
 	}
 
+	// vacuum table if requested
+	if w.CompactAfterWrite {
+		w.Logger.Debug("vacuuming table")
+		if !w.DryRun {
+			_, pErr := db.Exec(
+				fmt.Sprintf("VACUUM %s;", tableData.Name))
+			if pErr != nil {
+				return nil, pErr
+			}
+		}
+	}
+
 	// commit transaction
 	w.Logger.Debug("commiting transaction")
 	if !w.DryRun {

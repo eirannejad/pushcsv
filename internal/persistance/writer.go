@@ -16,10 +16,11 @@ type Result struct {
 }
 
 type DatabaseWriter struct {
-	Config           *DatabaseConfig
-	PurgeBeforeWrite bool
-	DryRun           bool
-	Logger           *cli.Logger
+	Config            *DatabaseConfig
+	PurgeBeforeWrite  bool
+	CompactAfterWrite bool
+	DryRun            bool
+	Logger            *cli.Logger
 }
 
 type Writer interface {
@@ -30,10 +31,11 @@ type Writer interface {
 
 func NewWriter(dbConfig *DatabaseConfig, options *cli.Options, logger *cli.Logger) (Writer, error) {
 	w := &DatabaseWriter{
-		Config:           dbConfig,
-		PurgeBeforeWrite: options.Purge,
-		DryRun:           options.DryRun,
-		Logger:           logger,
+		Config:            dbConfig,
+		PurgeBeforeWrite:  options.Purge,
+		CompactAfterWrite: options.Compact,
+		DryRun:            options.DryRun,
+		Logger:            logger,
 	}
 	if dbConfig.Backend == Postgres {
 		return GenericSQLWriter{*w}, nil
